@@ -30,7 +30,7 @@ pip install -q --upgrade "pip>=21.1" "pyinstaller>=4.6"
 echo $PKG_NAME $PKG_VERSION
 
 # build an executable binary file
-pyinstaller ${SRC_DIR}/pre_commit/main.py --clean --onefile --distpath $BUILD_DIR_PATH --name $PKG_NAME
+pyinstaller "${SRC_DIR}/pre_commit/main.py" --clean --onefile --distpath $BUILD_DIR_PATH --name $PKG_NAME
 
 ${BUILD_DIR_PATH}/${PKG_NAME} --version
 
