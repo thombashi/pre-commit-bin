@@ -19,4 +19,4 @@ release:
 .PHONY: setup
 setup:
 	@sudo apt-get -qq update
-	@sudo apt-get install -q -y --no-install-recommends curl coreutils git tar
+	@sudo apt-get install -q -y --no-install-recommends curl coreutils fakeroot git tar

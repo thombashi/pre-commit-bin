@@ -70,8 +70,7 @@ jobs:
 
       - name: Build - Linux
         run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install -y fakeroot
+          make setup
 
           ./scripts/build_linux_package.sh "$PRE_COMMIT_VERSION" ${{ env.PRE_COMMIT_SRC_DIR }}
         if: matrix.os == 'ubuntu-latest'
