@@ -1,0 +1,158 @@
+name: Build and release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: ci-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  BIN_NAME: pre-commit
+  DIST_DIR_NAME: dist
+  SHA_DIR: sha
+  SHA_FILE: sha256_pre-commit.json
+  PRE_COMMIT_REF: cb40e9682e2a941644347e3bea620875c8ed0ad5
+  PRE_COMMIT_SRC_DIR: src
+
+jobs:
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/checkout@v2
+        with:
+          repository: pre-commit/pre-commit
+          ref: ${{ env.PRE_COMMIT_REF }}
+          path: ${{ env.PRE_COMMIT_SRC_DIR }}
+
+      - name: Setup environment variables
+        shell: bash
+        run: echo "PRE_COMMIT_VERSION=$(./scripts/extrat_tag_name.py)" >> $GITHUB_ENV
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install pip
+        run: python -m pip install --upgrade --disable-pip-version-check "pip>=21.1"
+
+      - name: Get pip cache dir
+        id: pip-cache
+        run: echo "::set-output name=dir::$(pip cache dir)"
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ steps.pip-cache.outputs.dir }}
+            ./.tox
+          key: ${{ matrix.os }}-pip-${{ hashFiles('setup.py', '**/requirements.txt') }}
+          restore-keys: ${{ matrix.os }}-pip-
+
+      - name: Install pre-commit from source
+        run: python -m pip install --upgrade --disable-pip-version-check .
+        working-directory: ${{ env.PRE_COMMIT_SRC_DIR }}
+
+      - name: Install pyinstaller package
+        run: python -m pip install --quiet --upgrade --disable-pip-version-check "pip>=21.1" "pyinstaller>=4.6"
+
+      - name: Build - Linux
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y fakeroot
+
+          ./scripts/build_linux_package.sh "$PRE_COMMIT_VERSION" ${{ env.PRE_COMMIT_SRC_DIR }}
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Build - Windows
+        shell: bash
+        run: |
+          BIN_PATH=${DIST_DIR_NAME}/${BIN_NAME}.exe
+          SYSTEM=$(python -c "import platform; print(platform.system().casefold())")
+          MACHINE=$(python -c "import platform; print(platform.machine().casefold())")
+          ARCHIVE_PATH=${DIST_DIR_NAME}/${BIN_NAME}_${PRE_COMMIT_VERSION}_${SYSTEM}_${MACHINE}.zip
+
+          pyinstaller ${{ env.PRE_COMMIT_SRC_DIR }}/pre_commit/main.py --clean --onefile --name "$BIN_NAME"
+
+          ${BIN_PATH} --version
+
+          powershell compress-archive -Force "$BIN_PATH" "$ARCHIVE_PATH"
+        if: matrix.os == 'windows-latest'
+
+      - name: List binaries
+        id: ls_dist
+        run: |
+          ls ${DIST_DIR_NAME}/${BIN_NAME}_*
+
+          echo "::set-output name=dist_files::$(ls ${DIST_DIR_NAME}/${BIN_NAME}_*)"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: ${{ env.DIST_DIR_NAME }}
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ${{ env.DIST_DIR_NAME }}/${{ env.BIN_NAME }}_*
+
+  calc-hash:
+    needs: [build-and-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: binaries
+          path: ${{ env.DIST_DIR_NAME }}
+
+      - name: Setup environment variables
+        run: echo "PRE_COMMIT_VERSION=$(./scripts/extrat_tag_name.py)" >> $GITHUB_ENV
+
+      - name: Calculate checksums of binary assets
+        run: |
+          set -x
+
+          WORK_DIR=work
+          mkdir -p "$WORK_DIR" "$SHA_DIR"
+
+          for asset in $(gh release view v${PRE_COMMIT_VERSION} --json assets | jq '.assets[] | select(.contentType != "text/plain") | .url'); do
+            wget -P "$WORK_DIR" "$asset"
+          done
+
+          ./scripts/make_hash.py "${DIST_DIR_NAME}/${BIN_NAME}_*" > "${SHA_DIR}/${SHA_FILE}"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: shasum
+          path: ${{ env.SHA_DIR }}/${{ env.SHA_FILE }}
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ${{ env.SHA_DIR }}/${{ env.SHA_FILE }}
