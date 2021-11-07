@@ -15,6 +15,7 @@ DIST_DIR_NAME="dist"
 INSTALL_DIR_PATH="/usr/bin"
 BUILD_DIR_PATH="./${DPKG_BUILD_DIR}/${INSTALL_DIR_PATH}"
 PKG_NAME="pre-commit"
+SYSTEM=$(python -c "import platform; print(platform.system().casefold())")
 MACHINE=$(python -c "import platform; print(platform.machine().casefold())")
 
 if [ "$MACHINE" = "x86_64" ]; then
@@ -45,12 +46,14 @@ Homepage: https://github.com/thombashi/$PKG_NAME
 Priority: extra
 _CONTROL_
 
+VERSION_CODENAME=$(\grep -Po "(?<=VERSION_CODENAME=)[a-z]+" /etc/os-release)
+
 fakeroot dpkg-deb --build "$DPKG_BUILD_DIR" "$DIST_DIR_NAME"
+rename -v "s/_amd64.deb/_${VERSION_CODENAME}_amd64.deb/" ${DIST_DIR_NAME}/*
 
 # generate an archive file
 cd "$BUILD_DIR_PATH"
 ARCHIVE_EXTENSION=tar.gz
-SYSTEM=$(python -c "import platform; print(platform.system().casefold())")
-ARCHIVE_FILE="${PKG_NAME}_${PKG_VERSION}_${SYSTEM}_${MACHINE}.${ARCHIVE_EXTENSION}"
+ARCHIVE_FILE="${PKG_NAME}_${PKG_VERSION}_${SYSTEM}_${VERSION_CODENAME}_${MACHINE}.${ARCHIVE_EXTENSION}"
 tar -zcvf "$ARCHIVE_FILE" "$PKG_NAME"
 mv "$ARCHIVE_FILE" "$(git rev-parse --show-toplevel)/${DIST_DIR_NAME}/"
