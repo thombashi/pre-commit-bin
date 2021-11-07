@@ -13,7 +13,7 @@ def parse_option() -> argparse.Namespace:
 
     parser.add_argument(
         "glob_path",
-        help="patten of binary files.",
+        help="pattern of binary files.",
     )
 
     parser.add_argument(
