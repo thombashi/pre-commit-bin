@@ -143,7 +143,7 @@ jobs:
           ./scripts/make_hash.py "${DIST_DIR_NAME}/${BIN_NAME}_*" > "${SHA_DIR}/${SHA_JSON_FILE}"
 
           cd "$DIST_DIR_NAME"
-          sha256sum ${BIN_NAME}_* > "${SHA_DIR}/${SHA_TEXT_FILE}"
+          sha256sum ${BIN_NAME}_* > "../${SHA_DIR}/${SHA_TEXT_FILE}"
 
       - uses: actions/upload-artifact@v2
         with:
