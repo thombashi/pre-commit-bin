@@ -14,6 +14,7 @@ env:
   DIST_DIR_NAME: dist
   SHA_DIR: sha
   SHA_JSON_FILE: sha256_pre-commit.json
+  SHA_TEXT_FILE: sha256_pre-commit.txt
   PRE_COMMIT_REF: cb40e9682e2a941644347e3bea620875c8ed0ad5
   PRE_COMMIT_SRC_DIR: src
 
@@ -141,10 +142,13 @@ jobs:
 
           ./scripts/make_hash.py "${DIST_DIR_NAME}/${BIN_NAME}_*" > "${SHA_DIR}/${SHA_JSON_FILE}"
 
+          cd "$DIST_DIR_NAME"
+          sha256sum "${BIN_NAME}_*" > "${SHA_DIR}/${SHA_TEXT_FILE}"
+
       - uses: actions/upload-artifact@v2
         with:
           name: shasum
-          path: ${{ env.SHA_DIR }}/${{ env.SHA_JSON_FILE }}
+          path: ${{ env.SHA_DIR }}
           if-no-files-found: error
           retention-days: 1
 
@@ -154,4 +158,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ${{ env.SHA_DIR }}/${{ env.SHA_JSON_FILE }}
+          files: |
+            ${{ env.SHA_DIR }}/${{ env.SHA_JSON_FILE }}
+            ${{ env.SHA_DIR }}/${{ env.SHA_TEXT_FILE }}
