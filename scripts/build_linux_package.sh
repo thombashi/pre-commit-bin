@@ -36,7 +36,21 @@ pyinstaller "${SRC_DIR}/pre_commit/main.py" \
   --clean --onefile --distpath "$BUILD_DIR_PATH" --name "$PKG_NAME" \
   --hidden-import "pre_commit.resources" --collect-all "pre_commit.resources"
 
-${BUILD_DIR_PATH}/${PKG_NAME} --version
+# validate the built binary file
+cd "$BUILD_DIR_PATH"
+cat << _HOOKS_ > ".pre-commit-config.yaml"
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+_HOOKS_
+${PKG_NAME} --version
+${PKG_NAME} install --install-hooks -t pre-commit
+rm -f ".pre-commit-config.yaml"
+cd "$ROOT_DIR"
 
 # build a deb package
 cat << _CONTROL_ > "${DPKG_BUILD_DIR}/DEBIAN/control"
