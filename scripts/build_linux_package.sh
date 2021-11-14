@@ -10,10 +10,11 @@ fi
 PKG_VERSION="$1"
 SRC_DIR="$2"
 
+ROOT_DIR=$(git rev-parse --show-toplevel)
 DPKG_BUILD_DIR="dpkg_build"
 DIST_DIR_NAME="dist"
 INSTALL_DIR_PATH="/usr/bin"
-BUILD_DIR_PATH="./${DPKG_BUILD_DIR}/${INSTALL_DIR_PATH}"
+BUILD_DIR_PATH="${ROOT_DIR}/${DPKG_BUILD_DIR}/${INSTALL_DIR_PATH}"
 PKG_NAME="pre-commit"
 SYSTEM=$(python -c "import platform; print(platform.system().casefold())")
 MACHINE=$(python -c "import platform; print(platform.machine().casefold())")
@@ -56,4 +57,4 @@ cd "$BUILD_DIR_PATH"
 ARCHIVE_EXTENSION=tar.gz
 ARCHIVE_FILE="${PKG_NAME}_${PKG_VERSION}_${SYSTEM}_${VERSION_CODENAME}_${MACHINE}.${ARCHIVE_EXTENSION}"
 tar -zcvf "$ARCHIVE_FILE" "$PKG_NAME"
-mv "$ARCHIVE_FILE" "$(git rev-parse --show-toplevel)/${DIST_DIR_NAME}/"
+mv "$ARCHIVE_FILE" "${ROOT_DIR}/${DIST_DIR_NAME}/"
