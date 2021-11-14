@@ -27,7 +27,7 @@ fi
 rm -rf "$DIST_DIR_NAME" "$DPKG_BUILD_DIR" build
 mkdir -p "${DPKG_BUILD_DIR}/DEBIAN" "$DIST_DIR_NAME"
 
-pip install -q --upgrade "pip>=21.1" "pyinstaller>=4.6"
+pip install -q --upgrade "pip>=21.1" "pyinstaller>=4.7"
 
 echo $PKG_NAME $PKG_VERSION
 
