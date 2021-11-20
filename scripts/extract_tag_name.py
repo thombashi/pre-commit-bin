@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 
 
@@ -12,7 +13,7 @@ def main() -> int:
         print("ERROR: GITHUB_REF is not set", file=sys.stderr)
         return -1
 
-    if github_ref in ["main", "master"]:
+    if re.search("refs/heads/(main|master)", github_ref):
         # output dummy tag name
         print("0")
         return 0
