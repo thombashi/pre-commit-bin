@@ -12,6 +12,10 @@ def main() -> int:
         print("ERROR: GITHUB_REF is not set", file=sys.stderr)
         return -1
 
+    if github_ref in ["main", "master"]:
+        # output dummy tag name
+        print("0")
+
     git_tag_name = github_ref.split("/")[-1].lstrip("v")
     print(git_tag_name)
 
