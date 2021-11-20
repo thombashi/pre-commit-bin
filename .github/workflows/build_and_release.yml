@@ -40,7 +40,7 @@ jobs:
 
       - name: Setup environment variables
         shell: bash
-        run: echo "PRE_COMMIT_VERSION=$(./scripts/extrat_tag_name.py)" >> $GITHUB_ENV
+        run: echo "PRE_COMMIT_VERSION=$(./scripts/extract_tag_name.py)" >> $GITHUB_ENV
 
       - name: Setup Python
         uses: actions/setup-python@v2
@@ -128,7 +128,7 @@ jobs:
           path: ${{ env.DIST_DIR_NAME }}
 
       - name: Setup environment variables
-        run: echo "PRE_COMMIT_VERSION=$(./scripts/extrat_tag_name.py)" >> $GITHUB_ENV
+        run: echo "PRE_COMMIT_VERSION=$(./scripts/extract_tag_name.py)" >> $GITHUB_ENV
 
       - name: Calculate checksums of binary assets
         run: |
