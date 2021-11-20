@@ -68,7 +68,7 @@ jobs:
         working-directory: ${{ env.PRE_COMMIT_SRC_DIR }}
 
       - name: Install pyinstaller package
-        run: python -m pip install --quiet --upgrade --disable-pip-version-check "pip>=21.1" "pyinstaller>=4.6"
+        run: python -m pip install --quiet --upgrade --disable-pip-version-check "pip>=21.1" "pyinstaller>=4.7"
 
       - name: Build - Linux
         run: |
