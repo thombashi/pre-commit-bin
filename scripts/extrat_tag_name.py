@@ -15,6 +15,7 @@ def main() -> int:
     if github_ref in ["main", "master"]:
         # output dummy tag name
         print("0")
+        return 0
 
     git_tag_name = github_ref.split("/")[-1].lstrip("v")
     print(git_tag_name)
