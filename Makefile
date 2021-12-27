@@ -1,8 +1,8 @@
 PRE_COMMIT_SRC_DIR := src
 
 
-.PHONY: build
-build: clean
+.PHONY: build-latest
+build-latest: clean
 	@git clone --depth 1 https://github.com/pre-commit/pre-commit.git "$(PRE_COMMIT_SRC_DIR)"
 	@./scripts/build_linux_package.sh "$(shell cat tag_name)" "$(PRE_COMMIT_SRC_DIR)"
 	ls dist
