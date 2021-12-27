@@ -16,7 +16,7 @@ env:
   SHA_DIR: sha
   SHA_JSON_FILE: sha256_pre-commit.json
   SHA_TEXT_FILE: sha256_pre-commit.txt
-  PRE_COMMIT_REF: cb40e9682e2a941644347e3bea620875c8ed0ad5
+  PRE_COMMIT_REF: v2.16.0
   PRE_COMMIT_SRC_DIR: src
 
 jobs:
