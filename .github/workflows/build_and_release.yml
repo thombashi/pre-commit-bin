@@ -96,13 +96,6 @@ jobs:
           powershell compress-archive -Force "$BIN_PATH" "$ARCHIVE_PATH"
         if: matrix.os == 'windows-latest'
 
-      - name: List binaries
-        id: ls_dist
-        run: |
-          ls ${DIST_DIR_NAME}/${BIN_NAME}_*
-
-          echo "::set-output name=dist_files::$(ls ${DIST_DIR_NAME}/${BIN_NAME}_*)"
-
       - uses: actions/upload-artifact@v2
         with:
           name: binaries
